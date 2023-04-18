@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import axiosClient from "../axios-client";
 import { useStateContext } from "../contexts/ContextProvider";
@@ -8,6 +8,9 @@ const Signup = () => {
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfirmationRef = useRef();
+
+    //define a state to save and display errors
+    const [errors, setErrors] = useState(null);
 
     const { setUser, setToken } = useStateContext();
 
@@ -23,14 +26,14 @@ const Signup = () => {
 
         axiosClient
             .post("/signup", payload)
-            .then((data) => {
+            .then(({ data }) => {
                 setUser(data.user);
                 setToken(data.token);
             })
             .catch((err) => {
                 const response = err.response;
                 if (response && response.status === 422) {
-                    console.log(response.data.errors);
+                    setErrors(response.data.errors);
                 }
             });
     };
@@ -40,6 +43,14 @@ const Signup = () => {
             <div className="form">
                 <form onSubmit={onSubmit}>
                     <h1 className="title">Signup for free</h1>
+                    {/* display errors */}
+                    {errors && (
+                        <div className="alert">
+                            {Object.keys(errors).map((key) => (
+                                <p key={key}>{errors[key][0]}</p>
+                            ))}
+                        </div>
+                    )}
                     <input ref={nameRef} type="text" placeholder="Full Name" />
                     <input
                         ref={emailRef}
@@ -56,7 +67,7 @@ const Signup = () => {
                         type="password"
                         placeholder="Password Confirmation"
                     />
-                    <button className="btn btn-block">Login</button>
+                    <button className="btn btn-block">Sign up</button>
                     <p className="message">
                         Already Registered?
                         <Link to="/login"> Sign in</Link>
